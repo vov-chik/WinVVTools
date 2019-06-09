@@ -1,0 +1,788 @@
+﻿<!--Copyright © 2018-2019 Chikilev V.A. All rights reserved.-->
+
+<UserControl x:Name="userControl" x:Class="WinVVTools.Modules.CleanUp.Views.CleanUpView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:dialogs="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
+             xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+             xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+             xmlns:convLocal="clr-namespace:WinVVTools.CleanUp.Helpers.Converters"
+             xmlns:models="clr-namespace:WinVVTools.CleanUp.Models"
+             xmlns:conv="clr-namespace:WinVVTools.InternalShared.Helpers.Converters;assembly=WinVVTools.InternalShared"
+             xmlns:isd="clr-namespace:WinVVTools.InternalShared.Interactions;assembly=WinVVTools.InternalShared"
+             xmlns:viewModels="clr-namespace:WinVVTools.Modules.CleanUp.ViewModels"
+             dialogs:DialogParticipation.Register="{Binding}"
+             d:DataContext="{d:DesignInstance viewModels:CleanUpViewModel, IsDesignTimeCreatable=True}"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <!--<UserControl.DataContext>
+        <viewModels:CleanUpViewModel/>
+    </UserControl.DataContext>-->
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/WinVVTools.InternalShared;component/Resources/Icons.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid>
+        <TabControl x:Name="CleanUpTabs" Controls:TabControlHelper.Underlined="TabPanel"
+                     IsEnabled="{Binding Dialog.State, Converter={conv:DialogParentContentEnableConverter}, Mode=OneWay}">
+
+            <!--Tab Analyse-->
+            <TabItem x:Name="CleanUpMainTab" Header="Анализ">
+                <TabItem.Content>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="60"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <!--Tab Analyse - Last point-->
+                        <StackPanel Orientation="Horizontal"
+                                    IsEnabled="{Binding CurrentAnalyseType, Converter={convLocal:AnalyseTypeToEnableConverter}, 
+                                                ConverterParameter={x:Static models:AnalyseType.Off}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Opacity="{Binding IsEnabled, RelativeSource={RelativeSource Self}, Converter={convLocal:EnableToOpacityConverter}, 
+                                              ConverterParameter=0.3, Mode=OneWay}">
+                            <TextBlock Text="Контрольная точка:" FontSize="16" Margin="10,0,0,0"/>
+                            <TextBlock x:Name="CheckPoint" FontSize="22" Margin="25,10,25,10" HorizontalAlignment="Center"
+                                   Text="{Binding ModuleSettings.CheckPoint, Converter={convLocal:CheckPointMappingConverter},
+                                          Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Папок:" FontSize="12" Margin="4,2" HorizontalAlignment="Right"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1" FontSize="12" Margin="4,2" HorizontalAlignment="Right"
+                                           Text="{Binding ModuleSettings.CheckPoint.FolderCount, Mode=OneWay,
+                                                  Converter={convLocal:CheckPointDataMappingConverter},
+                                                  StringFormat=\{0:### ### ### ##0\}}" />
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Файлов:" FontSize="12" Margin="4,2" HorizontalAlignment="Right"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" FontSize="12" Margin="4,2" HorizontalAlignment="Right"
+                                           Text="{Binding ModuleSettings.CheckPoint.FileCount, Mode=OneWay,
+                                                  Converter={convLocal:CheckPointDataMappingConverter},
+                                                  StringFormat=\{0:### ### ### ##0\}}" />
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Ключей реестра:" FontSize="12" Margin="4,2" HorizontalAlignment="Right"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1" FontSize="12" Margin="4,2" HorizontalAlignment="Right"
+                                           Text="{Binding ModuleSettings.CheckPoint.RegistryCount, Mode=OneWay,
+                                                  Converter={convLocal:CheckPointDataMappingConverter},
+                                                  StringFormat=\{0:### ### ### ##0\}}" />
+                                <Border Grid.RowSpan="3" Grid.ColumnSpan="2"
+                                        Background="{Binding Background, Mode=OneWay, NotifyOnSourceUpdated=True, 
+                                                     RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type mah:MetroWindow}}, 
+                                                     UpdateSourceTrigger=PropertyChanged}"
+                                        Visibility="{Binding ModuleSettings.CheckPoint, Converter={convLocal:CheckPointDataVisibilityConverter}, 
+                                                     Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            </Grid>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="5,0"
+                                    Visibility="{Binding IsSettingsChanged, Converter={conv:BoolToVisibilityConverter}, 
+                                                 Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                    IsEnabled="{Binding CurrentAnalyseType, Converter={convLocal:AnalyseTypeToEnableConverter}, 
+                                                ConverterParameter={x:Static models:AnalyseType.Off}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Opacity="{Binding IsEnabled, RelativeSource={RelativeSource Self}, Converter={convLocal:EnableToOpacityConverter}, 
+                                              ConverterParameter=0.3, Mode=OneWay}">
+                            <Rectangle Width="22" Height="22" Margin="5,0" VerticalAlignment="Top"
+                                           Fill="{DynamicResource AccentColorBrush}">
+                                <Rectangle.OpacityMask>
+                                    <VisualBrush Stretch="Uniform" Visual="{StaticResource alert_circle_outline}" />
+                                </Rectangle.OpacityMask>
+                            </Rectangle>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="Настройки изменены без сохранения контрольной точки!" 
+                                           TextWrapping="Wrap" MaxWidth="180" LineStackingStrategy="BlockLineHeight" LineHeight="12"/>
+                                <Button Content="Восстановить" ToolTip="Загрузить сохраненные из файла настроек"
+                                        Style="{DynamicResource AccentedSquareButtonStyle}" Margin="0,5,0,0"
+                                        mah:ControlsHelper.ContentCharacterCasing="Normal"
+                                        Command="{Binding RereadCheckPointSettingsCommand}"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <!--Tab Analyse - Commands-->
+                        <Grid Grid.Row="1" Height="90"
+                              Visibility="{Binding CurrentAnalyseType, Converter={convLocal:AnalyseTypeToVisibilityConverter}, 
+                                           ConverterParameter={x:Static models:AnalyseType.Off}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Margin="5" ToolTip="Удалить точку"
+                                Style="{DynamicResource AccentedSquareButtonStyle}"
+                                Command="{Binding DeleteCheckPointCommand}">
+                                <StackPanel Orientation="Vertical">
+                                    <Rectangle Width="28" Height="28"
+                                    Fill="{Binding Path=Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}">
+                                        <Rectangle.OpacityMask>
+                                            <VisualBrush Stretch="Uniform" Visual="{StaticResource appbar_delete}" />
+                                        </Rectangle.OpacityMask>
+                                    </Rectangle>
+                                    <TextBlock Text="Удалить" Margin="0,5,0,0"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Grid.Column="1" Margin="5" ToolTip="Создать новую точку"
+                                Style="{DynamicResource AccentedSquareButtonStyle}"
+                                Command="{Binding CreateNewCheckPointCommand}">
+                                <StackPanel Orientation="Vertical">
+                                    <Rectangle Width="28" Height="28"
+                                    Fill="{Binding Path=Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}">
+                                        <Rectangle.OpacityMask>
+                                            <VisualBrush Stretch="Uniform" Visual="{StaticResource hexagon_slice_6}" />
+                                        </Rectangle.OpacityMask>
+                                    </Rectangle>
+                                    <TextBlock Text="Создать" Margin="0,5,0,0"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Grid.Column="2" Margin="5" ToolTip="Найти новые объекты"
+                                Style="{DynamicResource AccentedSquareButtonStyle}"
+                                Command="{Binding AnalysePointCommand}">
+                                <StackPanel Orientation="Vertical">
+                                    <Rectangle Width="28" Height="28"
+                                    Fill="{Binding Path=Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}">
+                                        <Rectangle.OpacityMask>
+                                            <VisualBrush Stretch="Uniform" Visual="{StaticResource magnify}" />
+                                        </Rectangle.OpacityMask>
+                                    </Rectangle>
+                                    <TextBlock Text="Анализ" Margin="0,5,0,0"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                        <!--Tab Analyse - Current activity-->
+                        <Grid Grid.Row="2" Height="90"
+                              Visibility="{Binding CurrentAnalyseType, Converter={convLocal:AnalyseTypeToVisibilityConverter}, Mode=OneWay}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel x:Name="activityCreateCheckpoint" Orientation="Horizontal" Margin="40,5,20,5" VerticalAlignment="Center"
+                                        Visibility="{Binding CurrentAnalyseType, Converter={convLocal:AnalyseTypeToVisibilityConverter}, 
+                                                     ConverterParameter={x:Static models:AnalyseType.SearchAllObjects}, Mode=OneWay, 
+                                                     UpdateSourceTrigger=PropertyChanged}">
+                                <Rectangle Width="38" Height="38"
+                                           Fill="{DynamicResource AccentColorBrush}">
+                                    <Rectangle.OpacityMask>
+                                        <VisualBrush Stretch="Uniform" Visual="{StaticResource hexagon_slice_6}" />
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                                <TextBlock Text="Создание новой контрольной точки..." FontSize="22" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                            </StackPanel>
+                            <StackPanel x:Name="activityAnalyze" Orientation="Horizontal" Margin="40,5,20,5" VerticalAlignment="Center"
+                                        Visibility="{Binding CurrentAnalyseType, Converter={convLocal:AnalyseTypeToVisibilityConverter}, 
+                                                     ConverterParameter={x:Static models:AnalyseType.SearchNewObjects}, Mode=OneWay, 
+                                                     UpdateSourceTrigger=PropertyChanged}">
+                                <Rectangle Width="38" Height="38"
+                                           Fill="{DynamicResource AccentColorBrush}">
+                                    <Rectangle.OpacityMask>
+                                        <VisualBrush Stretch="Uniform" Visual="{StaticResource magnify}" />
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                                <TextBlock Text="Анализ..." FontSize="22" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                            </StackPanel>
+                            <Button Grid.Column="2" Margin="5" ToolTip="Отменить операцию"
+                                Style="{DynamicResource AccentedSquareButtonStyle}"
+                                Command="{Binding CancelActivityCommand}">
+                                <StackPanel Orientation="Vertical">
+                                    <Rectangle Width="28" Height="28"
+                                    Fill="{Binding Path=Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}">
+                                        <Rectangle.OpacityMask>
+                                            <VisualBrush Stretch="Uniform" Visual="{StaticResource appbar_cancel}" />
+                                        </Rectangle.OpacityMask>
+                                    </Rectangle>
+                                    <TextBlock Text="Отменить" Margin="0,5,0,0"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                        <!--Tab Analyse - Progress-->
+                        <Grid Grid.Row="3"
+                              Visibility="{Binding CurrentAnalyseType, Converter={convLocal:AnalyseTypeToVisibilityConverter}, Mode=OneWay}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="30"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Controls:MetroProgressBar IsIndeterminate="True" Margin="5,0"/>
+                            <DataGrid Grid.Row="1" x:Name="dgAnalyseActivities" Margin="5" 
+                                      ItemsSource="{Binding AnalyseActivities}" AutoGenerateColumns="False"
+                                      CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False"
+                                      CanUserResizeColumns="False" CanUserResizeRows="False" CanUserSortColumns="False"
+                                      IsReadOnly="True" SelectionMode="Single" RowBackground="Transparent">
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Rectangle Width="18" Height="18" Margin="10,0,5,0"
+                                                               Fill="{Binding Foreground, ElementName=dgAnalyseActivities}">
+                                                        <Rectangle.OpacityMask>
+                                                            <VisualBrush Stretch="Uniform" 
+                                                                         Visual="{Binding AnalyseObject.Type, Converter={convLocal:AnalyseObjectTypeToVisualConverter}, 
+                                                                                  Mode=OneWay, NotifyOnSourceUpdated=True, UpdateSourceTrigger=PropertyChanged}"/>
+                                                        </Rectangle.OpacityMask>
+                                                    </Rectangle>
+                                                    <TextBlock Text="{Binding AnalyseObject.Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                                               Foreground="{Binding Foreground, ElementName=dgAnalyseActivities}" Margin="5,0,20,0"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Сканирование">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Rectangle Width="12" Height="12" Margin="10,0,5,0"
+                                                               Fill="{Binding Foreground, ElementName=dgAnalyseActivities}">
+                                                        <Rectangle.OpacityMask>
+                                                            <VisualBrush Stretch="Uniform" 
+                                                                         Visual="{Binding SearchState, Converter={convLocal:AnalyseStateToVisualConverter}, 
+                                                                                  Mode=OneWay, NotifyOnSourceUpdated=True, UpdateSourceTrigger=PropertyChanged}"/>
+                                                        </Rectangle.OpacityMask>
+                                                    </Rectangle>
+                                                    <TextBlock Text="{Binding SearchCount, Mode=OneWay, UpdateSourceTrigger=PropertyChanged,
+                                                                      StringFormat=\{0:### ### ### ##0\}}"
+                                                               Foreground="{Binding Foreground, ElementName=dgAnalyseActivities}" Margin="5,0,10,0"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Загрузка контрольной точки"
+                                                Visibility="{Binding Visibility, Source={x:Reference activityAnalyze}}">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Rectangle Width="12" Height="12" Margin="10,0,5,0"
+                                                               Fill="{Binding Foreground, ElementName=dgAnalyseActivities}">
+                                                        <Rectangle.OpacityMask>
+                                                            <VisualBrush Stretch="Uniform" 
+                                                                         Visual="{Binding CheckPointState, Converter={convLocal:AnalyseStateToVisualConverter}, 
+                                                                                  Mode=OneWay, NotifyOnSourceUpdated=True, UpdateSourceTrigger=PropertyChanged}"/>
+                                                        </Rectangle.OpacityMask>
+                                                    </Rectangle>
+                                                    <TextBlock Text="{Binding CheckPointCount, Mode=OneWay, UpdateSourceTrigger=PropertyChanged,
+                                                                      StringFormat=\{0:### ### ### ##0\}}"
+                                                               Foreground="{Binding Foreground, ElementName=dgAnalyseActivities}" Margin="5,0,10,0"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Сравнение"
+                                                Visibility="{Binding Visibility, Source={x:Reference activityAnalyze}}">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Rectangle Width="12" Height="12" Margin="10,0,5,0"
+                                                               Fill="{Binding Foreground, ElementName=dgAnalyseActivities}">
+                                                        <Rectangle.OpacityMask>
+                                                            <VisualBrush Stretch="Uniform" 
+                                                                         Visual="{Binding CompareState, Converter={convLocal:AnalyseStateToVisualConverter}, 
+                                                                                  Mode=OneWay, NotifyOnSourceUpdated=True, UpdateSourceTrigger=PropertyChanged}"/>
+                                                        </Rectangle.OpacityMask>
+                                                    </Rectangle>
+                                                    <TextBlock Foreground="{Binding Foreground, ElementName=dgAnalyseActivities}" Margin="5,0,10,0">
+                                                        <Run Text="{Binding CompareState, Converter={convLocal:AnalyseStateDescriptionConverter}, 
+                                                                    Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                                        <Run Text="{Binding CompareCount, Mode=OneWay, UpdateSourceTrigger=PropertyChanged,
+                                                                    StringFormat=\{0:### ### ### ##0\}}"/>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Сохранение"
+                                                Visibility="{Binding Visibility, Source={x:Reference activityCreateCheckpoint}}">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                    <Rectangle Width="12" Height="12"
+                                                               Fill="{Binding Foreground, ElementName=dgAnalyseActivities}">
+                                                        <Rectangle.OpacityMask>
+                                                            <VisualBrush Stretch="Uniform" 
+                                                                         Visual="{Binding CompareState, Converter={convLocal:AnalyseStateToVisualConverter}, 
+                                                                                  Mode=OneWay, NotifyOnSourceUpdated=True, UpdateSourceTrigger=PropertyChanged}"/>
+                                                        </Rectangle.OpacityMask>
+                                                    </Rectangle>
+                                                    <TextBlock Text="{Binding CompareState, Converter={convLocal:AnalyseStateDescriptionConverter}, 
+                                                                      Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                                               Foreground="{Binding Foreground, ElementName=dgAnalyseActivities}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <Border Grid.Row="1" VerticalAlignment="Top" Height="32" Background="Transparent" IsEnabled="False"/>
+                        </Grid>
+                    </Grid>
+                </TabItem.Content>
+            </TabItem>
+
+            <!--Tab Uninstalls-->
+            <TabItem x:Name="CleanUpPointsTab" Header="Инсталляции">
+                <TabItem.Content>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" MaxHeight="140"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="18"/>
+                        </Grid.RowDefinitions>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="50"/>
+                            </Grid.ColumnDefinitions>
+                            <!--Tab Uninstalls - Points-->
+                            <DataGrid Margin="5" VerticalAlignment="Stretch" AutoGenerateColumns="False"
+                                      CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeRows="False" SelectionMode="Single"
+                                      ItemsSource="{Binding Installations}" SelectedItem="{Binding SelectedInstallation}"
+                                      IsEnabled="{Binding IsInstallationsChange, Converter={conv:ReverseBoolConverter}, Mode=OneWay}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Название" IsReadOnly="True"
+                                                        Binding="{Binding Name, Mode=OneWay}"/>
+                                    <DataGridTextColumn Header="Время создания" IsReadOnly="True"
+                                                        Binding="{Binding Time, Mode=OneWay, StringFormat='yyyy.MM.dd HH:mm:ss'}"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <StackPanel Grid.Column="1" Orientation="Vertical"
+                                        IsEnabled="{Binding IsInstallationsChange, Converter={conv:ReverseBoolConverter}, 
+                                                    Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
+                                <Button Height="32" Width="32" Margin="5,15,5,5" 
+                                        ToolTip="Деинсталлировать выбранное приложение"
+                                        Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
+                                        Command="{Binding UninstalPointCommand}">
+                                    <Rectangle Width="24" Height="24"
+                                    Fill="{Binding Path=Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}">
+                                        <Rectangle.OpacityMask>
+                                            <VisualBrush Stretch="Uniform" Visual="{StaticResource delete_circle}" />
+                                        </Rectangle.OpacityMask>
+                                    </Rectangle>
+                                </Button>
+                                <Button Height="32" Width="32" Margin="5" 
+                                        ToolTip="Удалить запись только из списка"
+                                        Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
+                                        Command="{Binding DeletePointCommand}">
+                                    <Rectangle Width="24" Height="24"
+                                    Fill="{Binding Path=Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}">
+                                        <Rectangle.OpacityMask>
+                                            <VisualBrush Stretch="Uniform" Visual="{StaticResource minus_circle}" />
+                                        </Rectangle.OpacityMask>
+                                    </Rectangle>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+
+                        <TabControl x:Name="PointEntities" Grid.Row="1" MinHeight="180" Controls:TabControlHelper.Underlined="TabPanel" >
+                            <!--Tab Uninstalls - Files-->
+                            <TabItem Header="Файлы и папки">
+                                <TabItem.Content>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="50"/>
+                                        </Grid.ColumnDefinitions>
+                                        <DataGrid x:Name="dgPointFiles" Margin="5" AutoGenerateColumns="False"
+                                                  ItemsSource="{Binding InstallationFiles}"
+                                                  CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False"
+                                                  CanUserResizeColumns="False" CanUserResizeRows="False" CanUserSortColumns="False"
+                                                  HeadersVisibility="None" EnableRowVirtualization="True"
+                                                  IsEnabled="{Binding IsInstallationsChange, Converter={conv:ReverseBoolConverter}, Mode=OneWay}" 
+                                                  SelectionChanged="DataGridSelectionChanged">
+                                            <!--<DataGrid.RowStyle>
+                                                <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource MetroDataGridRow}">
+                                                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                                </Style>
+                                            </DataGrid.RowStyle>-->
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path, Mode=OneWay}"/>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                        <StackPanel Orientation="Vertical" Grid.Column="1" VerticalAlignment="Top"
+                                                    IsEnabled="{Binding IsInstallationsChange, Converter={conv:ReverseBoolConverter}, 
+                                                                Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
+                                            <Button Height="32" Width="32" Margin="5"
+                                                    ToolTip="Удалить выбранный файл"
+                                                    Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
+                                                    Command="{Binding DeletePointFileCommand}">
+                                                <Rectangle Width="24" Height="24"
+                                                        Fill="{Binding Path=Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}">
+                                                    <Rectangle.OpacityMask>
+                                                        <VisualBrush Stretch="Uniform" Visual="{StaticResource close_circle}" />
+                                                    </Rectangle.OpacityMask>
+                                                </Rectangle>
+                                            </Button>
+                                            <Button Height="32" Width="32" Margin="5"
+                                                    ToolTip="Удалить запись только из списка"
+                                                    Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
+                                                    Command="{Binding RemovePointFileLinkCommand}">
+                                                <Rectangle Width="24" Height="24"
+                                                        Fill="{Binding Path=Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}">
+                                                    <Rectangle.OpacityMask>
+                                                        <VisualBrush Stretch="Uniform" Visual="{StaticResource minus_circle}" />
+                                                    </Rectangle.OpacityMask>
+                                                </Rectangle>
+                                            </Button>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Vertical" Grid.Column="1" VerticalAlignment="Bottom"
+                                                    IsEnabled="{Binding IsInstallationsChange, Converter={conv:ReverseBoolConverter}, 
+                                                                Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
+                                            <Button Height="32" Width="32" Margin="5"
+                                                    ToolTip="Запустить файл или открыть папку"
+                                                    Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
+                                                    Command="{Binding OpenPointFileCommand}">
+                                                <Rectangle Width="20" Height="20"
+                                                        Fill="{Binding Path=Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}">
+                                                    <Rectangle.OpacityMask>
+                                                        <VisualBrush Stretch="Uniform" Visual="{StaticResource magnify}" />
+                                                    </Rectangle.OpacityMask>
+                                                </Rectangle>
+                                            </Button>
+                                            <Button Height="32" Width="32" Margin="5"
+                                                    ToolTip="Просмотреть свойства выбранного файла"
+                                                    Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
+                                                    Command="{Binding ShowPointFilePropertiesCommand}">
+                                                <Rectangle Width="24" Height="24"
+                                                        Fill="{Binding Path=Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}">
+                                                    <Rectangle.OpacityMask>
+                                                        <VisualBrush Stretch="Uniform" Visual="{StaticResource settings}" />
+                                                    </Rectangle.OpacityMask>
+                                                </Rectangle>
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
+                                </TabItem.Content>
+                            </TabItem>
+
+                            <!--Tab Uninstalls - Register-->
+                            <TabItem Header="Записи реестра">
+                                <TabItem.Content>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="50"/>
+                                        </Grid.ColumnDefinitions>
+                                        <DataGrid x:Name="dgPointRegistry" Margin="5" AutoGenerateColumns="False"
+                                                  ItemsSource="{Binding InstallationRegistries}"
+                                                  CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False"
+                                                  CanUserResizeColumns="False" CanUserResizeRows="False" CanUserSortColumns="False"
+                                                  HeadersVisibility="None" EnableRowVirtualization="True"
+                                                  IsEnabled="{Binding IsInstallationsChange, Converter={conv:ReverseBoolConverter}, Mode=OneWay}"
+                                                  SelectionChanged="DataGridSelectionChanged">
+                                            <!--<DataGrid.RowStyle>
+                                                <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource MetroDataGridRow}">
+                                                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                                </Style>
+                                            </DataGrid.RowStyle>-->
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path, Mode=OneWay}"/>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                        <StackPanel Orientation="Vertical" Grid.Column="1" VerticalAlignment="Top"
+                                                    IsEnabled="{Binding IsInstallationsChange, Converter={conv:ReverseBoolConverter}, 
+                                                                Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
+                                            <Button Height="32" Width="32" Margin="5"
+                                                    ToolTip="Удалить выбранный ключ"
+                                                    Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
+                                                    Command="{Binding DeletePointRegistryCommand}">
+                                                <Rectangle Width="24" Height="24"
+                                                        Fill="{Binding Path=Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}">
+                                                    <Rectangle.OpacityMask>
+                                                        <VisualBrush Stretch="Uniform" Visual="{StaticResource close_circle}" />
+                                                    </Rectangle.OpacityMask>
+                                                </Rectangle>
+                                            </Button>
+                                            <Button Height="32" Width="32" Margin="5"
+                                                    ToolTip="Удалить запись только из списка"
+                                                    Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
+                                                    Command="{Binding RemovePointRegistryLinkCommand}">
+                                                <Rectangle Width="24" Height="24"
+                                                        Fill="{Binding Path=Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}">
+                                                    <Rectangle.OpacityMask>
+                                                        <VisualBrush Stretch="Uniform" Visual="{StaticResource minus_circle}" />
+                                                    </Rectangle.OpacityMask>
+                                                </Rectangle>
+                                            </Button>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Vertical" Grid.Column="1" VerticalAlignment="Bottom"
+                                                    IsEnabled="{Binding IsInstallationsChange, Converter={conv:ReverseBoolConverter}, 
+                                                                Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
+                                            <Button Height="32" Width="32" Margin="5"
+                                                    ToolTip="Открыть редактор реестра"
+                                                    Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
+                                                    Command="{Binding OpenPointRegEditCommand}">
+                                                <Rectangle Width="20" Height="20"
+                                                        Fill="{Binding Path=Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}">
+                                                    <Rectangle.OpacityMask>
+                                                        <VisualBrush Stretch="Uniform" Visual="{StaticResource magnify}" />
+                                                    </Rectangle.OpacityMask>
+                                                </Rectangle>
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
+                                </TabItem.Content>
+                            </TabItem>
+                        </TabControl>
+
+                        <Grid Grid.Row="2" Margin="5,0"
+                              Visibility="{Binding InstallationChangeProgress, Converter={convLocal:IntToVisibilityConverter}, Mode=OneWay}">
+                            <Controls:MetroProgressBar Minimum="0" Maximum="100"
+                                                       Value="{Binding InstallationChangeProgress, Mode=OneWay}"/>
+                            <TextBlock HorizontalAlignment="Center">
+                                <Run Text="{Binding InstallationChangeProgress, Mode=OneWay}"/>
+                                <Run Text="%"/>
+                            </TextBlock>
+                        </Grid>
+
+                    </Grid>
+                </TabItem.Content>
+            </TabItem>
+
+            <!--Tab Settings-->
+            <TabItem x:Name="CleanUpSettingsTab" Header="Настройки">
+                <TabItem.Content>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="50"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!--Tab Settings - Files-->
+                        <GroupBox Header="Анализируемые диски" Margin="5">
+                            <GroupBox.Resources>
+                                <CollectionViewSource x:Key="cusDiscsVS" Source="{Binding ModuleSettings.AnalysedDisks}">
+                                    <CollectionViewSource.SortDescriptions>
+                                        <scm:SortDescription PropertyName="Name" />
+                                    </CollectionViewSource.SortDescriptions>
+                                </CollectionViewSource>
+                            </GroupBox.Resources>
+                            <DataGrid x:Name="CleanUpSettingsDiscs" AutoGenerateColumns="False"
+                                      ItemsSource="{Binding Source={StaticResource cusDiscsVS}}"
+                                      CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False"
+                                      CanUserResizeColumns="False" CanUserResizeRows="False" CanUserSortColumns="False"
+                                      HeadersVisibility="None">
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <CheckBox IsChecked="{Binding Path=IsAnalyzed, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                          Command="{Binding DataContext.CheckCleanUpSettingsDiscsAnalyzedCommand, ElementName=userControl}" 
+                                                          CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}"
+                                                          IsEnabled="{Binding DataContext.CurrentAnalyseType, ElementName=userControl, Converter={convLocal:AnalyseTypeToEnableConverter}, 
+                                                                      ConverterParameter={x:Static models:AnalyseType.Off}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Width="36" IsReadOnly="True">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Rectangle Width="18" Height="18" 
+                                                           Fill="{Binding Foreground, ElementName=CleanUpSettingsDiscs}">
+                                                    <Rectangle.OpacityMask>
+                                                        <VisualBrush Stretch="Uniform" 
+                                                                     Visual="{Binding Type, Converter={convLocal:AnalyseObjectTypeToVisualConverter}, 
+                                                                              Mode=OneWay, NotifyOnSourceUpdated=True, UpdateSourceTrigger=PropertyChanged}" />
+                                                    </Rectangle.OpacityMask>
+                                                </Rectangle>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn IsReadOnly="True"  
+                                        Binding="{Binding Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </GroupBox>
+                        <GroupBox Header="Анализируемые / игнорируемые папки" Grid.Column="1" Margin="5">
+                            <DataGrid x:Name="CleanUpSettingsFolders" AutoGenerateColumns="False"
+                                      ItemsSource="{Binding ModuleSettings.AnalysedFolders}"
+                                      CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False"
+                                      CanUserResizeColumns="False" CanUserResizeRows="False" CanUserSortColumns="False"
+                                      HeadersVisibility="None" EnableRowVirtualization="True"
+                                      SelectionChanged="DataGridSelectionChanged">
+                                <!--<DataGrid.RowStyle>
+                                    <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource MetroDataGridRow}">
+                                        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </Style>
+                                </DataGrid.RowStyle>-->
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Width="36" IsReadOnly="True">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Rectangle Width="16" Height="16" 
+                                                           Fill="{Binding Foreground, ElementName=CleanUpSettingsFolders}">
+                                                    <Rectangle.OpacityMask>
+                                                        <VisualBrush Stretch="Uniform" 
+                                                                     Visual="{Binding IsAnalyzed, Converter={convLocal:IsAnalyzedToSymbolConverter}, 
+                                                                              Mode=OneWay, NotifyOnSourceUpdated=True, UpdateSourceTrigger=PropertyChanged}" />
+                                                    </Rectangle.OpacityMask>
+                                                </Rectangle>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Width="36" IsReadOnly="True">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Rectangle Width="18" Height="18" 
+                                                           Fill="{Binding Foreground, ElementName=CleanUpSettingsFolders}">
+                                                    <Rectangle.OpacityMask>
+                                                        <VisualBrush Stretch="Uniform" 
+                                                                     Visual="{Binding Type, Converter={convLocal:AnalyseObjectTypeToVisualConverter}, 
+                                                                              Mode=OneWay, NotifyOnSourceUpdated=True, UpdateSourceTrigger=PropertyChanged}" />
+                                                    </Rectangle.OpacityMask>
+                                                </Rectangle>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn IsReadOnly="True"
+                                        Binding="{Binding Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </GroupBox>
+                        <StackPanel Orientation="Vertical" Grid.Column="2"
+                                    IsEnabled="{Binding CurrentAnalyseType, Converter={convLocal:AnalyseTypeToEnableConverter}, 
+                                                ConverterParameter={x:Static models:AnalyseType.Off}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Opacity="{Binding IsEnabled, RelativeSource={RelativeSource Self}, Converter={convLocal:EnableToOpacityConverter}, 
+                                              ConverterParameter=0.3, Mode=OneWay}">
+                            <Button Height="32" Width="32" Margin="5,15,5,5" 
+                                    ToolTip="Добавить папку"
+                                    Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
+                                    Command="{Binding AddCleanUpSettingsFolderCommand}">
+                                <Rectangle Width="20" Height="20"
+                                           Fill="{Binding Path=Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}">
+                                    <Rectangle.OpacityMask>
+                                        <VisualBrush Stretch="Uniform" Visual="{StaticResource folder_plus}" />
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                            </Button>
+                            <Button Height="32" Width="32" Margin="5" 
+                                    ToolTip="Удалить папку"
+                                    Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
+                                    Command="{Binding DeleteCleanUpSettingsFolderCommand}">
+                                <Rectangle Width="20" Height="20"
+                                           Fill="{Binding Path=Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}">
+                                    <Rectangle.OpacityMask>
+                                        <VisualBrush Stretch="Uniform" Visual="{StaticResource folder_remove}" />
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                            </Button>
+                            <Button Height="32" Width="32" Margin="5" 
+                                    ToolTip="Анализировать / Игнорировать"
+                                    Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
+                                    Command="{Binding ChangeCleanUpSettingsFolderCommand}">
+                                <Rectangle Width="24" Height="24"
+                                           Fill="{Binding Path=Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}">
+                                    <Rectangle.OpacityMask>
+                                        <VisualBrush Stretch="Uniform" Visual="{StaticResource contrast_circle}" />
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                            </Button>
+                        </StackPanel>
+                        <!--Tab Settings - Register-->
+                        <GroupBox Header="Анализируемые / игнорируемые ключи реестра" Grid.Row="1" Grid.ColumnSpan="2" Margin="5">
+                            <DataGrid x:Name="CleanUpSettingsRegistries" AutoGenerateColumns="False"
+                                      ItemsSource="{Binding ModuleSettings.AnalysedRegistries}" 
+                                      CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False"
+                                      CanUserResizeColumns="False" CanUserResizeRows="False" CanUserSortColumns="False"
+                                      HeadersVisibility="None" EnableRowVirtualization="True"
+                                      SelectionChanged="DataGridSelectionChanged">
+                                <!--<DataGrid.RowStyle>
+                                    <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource MetroDataGridRow}">
+                                        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </Style>
+                                </DataGrid.RowStyle>-->
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Width="36" IsReadOnly="True">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Rectangle Width="16" Height="16" 
+                                                           Fill="{Binding Foreground, ElementName=CleanUpSettingsFolders}">
+                                                    <Rectangle.OpacityMask>
+                                                        <VisualBrush Stretch="Uniform" 
+                                                                     Visual="{Binding IsAnalyzed, Converter={convLocal:IsAnalyzedToSymbolConverter}, 
+                                                                              Mode=OneWay, NotifyOnSourceUpdated=True, UpdateSourceTrigger=PropertyChanged}" />
+                                                    </Rectangle.OpacityMask>
+                                                </Rectangle>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Width="36" IsReadOnly="True">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Rectangle Width="18" Height="18" 
+                                                           Fill="{Binding Foreground, ElementName=CleanUpSettingsRegistries}">
+                                                    <Rectangle.OpacityMask>
+                                                        <VisualBrush Stretch="Uniform" 
+                                                                     Visual="{Binding Type, Converter={convLocal:AnalyseObjectTypeToVisualConverter}, 
+                                                                              Mode=OneWay, NotifyOnSourceUpdated=True, UpdateSourceTrigger=PropertyChanged}" />
+                                                    </Rectangle.OpacityMask>
+                                                </Rectangle>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn IsReadOnly="True"
+                                        Binding="{Binding Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </GroupBox>
+                        <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="2"
+                                    IsEnabled="{Binding CurrentAnalyseType, Converter={convLocal:AnalyseTypeToEnableConverter}, 
+                                                ConverterParameter={x:Static models:AnalyseType.Off}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Opacity="{Binding IsEnabled, RelativeSource={RelativeSource Self}, Converter={convLocal:EnableToOpacityConverter}, 
+                                              ConverterParameter=0.3, Mode=OneWay}">
+                            <Button Height="32" Width="32" Margin="5,15,5,5" 
+                                    ToolTip="Добавить ключ реестра для анализа"
+                                    Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
+                                    Command="{Binding AddCleanUpSettingsRegisterKeyCommand}">
+                                <Rectangle Width="24" Height="24"
+                                           Fill="{Binding Path=Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}">
+                                    <Rectangle.OpacityMask>
+                                        <VisualBrush Stretch="Uniform" Visual="{StaticResource plus_circle}" />
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                            </Button>
+                            <Button Height="32" Width="32" Margin="5" 
+                                    ToolTip="Удалить выбранный ключ"
+                                    Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
+                                    Command="{Binding DeleteCleanUpSettingsRegisterKeyCommand}">
+                                <Rectangle Width="24" Height="24"
+                                           Fill="{Binding Path=Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}">
+                                    <Rectangle.OpacityMask>
+                                        <VisualBrush Stretch="Uniform" Visual="{StaticResource minus_circle}" />
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                            </Button>
+                            <Button Height="32" Width="32" Margin="5" 
+                                    ToolTip="Анализировать / Игнорировать"
+                                    Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
+                                    Command="{Binding ChangeCleanUpSettingsRegistryCommand}">
+                                <Rectangle Width="24" Height="24"
+                                           Fill="{Binding Path=Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}">
+                                    <Rectangle.OpacityMask>
+                                        <VisualBrush Stretch="Uniform" Visual="{StaticResource contrast_circle}" />
+                                    </Rectangle.OpacityMask>
+                                </Rectangle>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </TabItem.Content>
+            </TabItem>
+        </TabControl>
+        
+        <isd:MessageDialogView DataContext="{Binding Dialog, Mode=OneWay, NotifyOnSourceUpdated=True, UpdateSourceTrigger=PropertyChanged}"
+                               DialogVisibility="{Binding State, Mode=OneWay, NotifyOnSourceUpdated=True, UpdateSourceTrigger=PropertyChanged}"/>
+
+    </Grid>
+</UserControl>

@@ -1,0 +1,78 @@
+﻿<!--Copyright © 2018-2019 Chikilev V.A. All rights reserved.-->
+
+<UserControl x:Class="WinVVTools.Modules.CleanUp.Views.CleanUpTabView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+             xmlns:intB="clr-namespace:WinVVTools.InternalShared.Behaviour;assembly=WinVVTools.InternalShared"
+             xmlns:viewModels="clr-namespace:WinVVTools.Modules.CleanUp.ViewModels"
+             d:DataContext="{d:DesignInstance viewModels:CleanUpTabViewModel, IsDesignTimeCreatable=True}"
+             mc:Ignorable="d" 
+             d:DesignHeight="94" d:DesignWidth="120">
+
+    <!--<UserControl.DataContext>
+        <viewModels:CleanUpTabViewModel/>
+    </UserControl.DataContext>-->
+
+    <UserControl.Resources>
+        <Canvas x:Key="broom" Name="broom" Width="24" Height="24">
+            <Path Data="M19.36,2.72L20.78,4.14L15.06,9.85C16.13,11.39 16.28,13.24 15.38,14.44L9.06,8.12C10.26,7.22 12.11,7.37 13.65,8.44L19.36,2.72M5.93,17.57C3.92,15.56 2.69,13.16 2.35,10.92L7.23,8.83L14.67,16.27L12.58,21.15C10.34,20.81 7.94,19.58 5.93,17.57Z" Fill="Black" />
+        </Canvas>
+    </UserControl.Resources>
+    
+    <RadioButton GroupName="{x:Static intB:RegionNames.ModuleTabsRegion}"
+                 Height="90" Width="116" Margin="2"
+                 Command="{Binding ShowModuleWorkspaceCommand}">
+        <RadioButton.Style>
+            <Style TargetType="{x:Type RadioButton}">
+                <Setter Property="SnapsToDevicePixels" Value="True" />
+                <Setter Property="OverridesDefaultStyle" Value="True" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type RadioButton}">
+                            <Border Name="tvControl" 
+                                    Background="{DynamicResource AccentColorBrush3}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="7*"/>
+                                        <RowDefinition Height="5*"/>
+                                    </Grid.RowDefinitions>
+                                    <Controls:Badged Badge="{Binding Path=BadgeValue, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" 
+                                                     Height="46" Width="90" VerticalAlignment="Bottom">
+                                        <Rectangle Width="32" Height="32" Margin="0,10,0,0"
+                                                   Fill="{TemplateBinding Foreground}">
+                                            <Rectangle.OpacityMask>
+                                                <VisualBrush Stretch="Uniform" Visual="{StaticResource broom}" />
+                                            </Rectangle.OpacityMask>
+                                        </Rectangle>
+                                    </Controls:Badged>
+                                    <Controls:ProgressRing Grid.RowSpan="2" Margin="2"
+                                                           Foreground="{DynamicResource AccentColorBrush}" VerticalAlignment="Top"
+                                                           IsActive="{Binding Path=IsActive, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"/>
+                                    <TextBlock Text="Очистка инсталляций" Grid.Row="1" FontSize="18" TextWrapping="Wrap" 
+                                               TextAlignment="Center"
+                                               LineStackingStrategy="BlockLineHeight" LineHeight="16"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+                            <!--Triggers-->
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="true">
+                                    <Setter TargetName="tvControl" Property="Background" Value="{DynamicResource AccentColorBrush}"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="true">
+                                    <Setter TargetName="tvControl" Property="Background" Value="{DynamicResource AccentColorBrush2}"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="true">
+                                    <Setter TargetName="tvControl" Property="Background" Value="{DynamicResource IdealForegroundDisabledBrush}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </RadioButton.Style>
+    </RadioButton>
+</UserControl>
